@@ -1,2 +1,2 @@
 # Teleployer
-A tool for deploy Musily releases on telegram
+A tool to deploy Musily releases on telegram
