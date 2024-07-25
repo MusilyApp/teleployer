@@ -6,11 +6,12 @@ clone_dir="musily"
 apk_dir="$clone_dir/build/app/outputs/apk/release"
 output_apk="musily"
 version="unknown"
+beta_flag=""
 
 # Function to show script usage
 usage() {
-  echo "Usage: $0 --chat <chat_id>"
-  echo "       -c <chat_id>"
+  echo "Usage: $0 --chat <chat_id> [--beta]"
+  echo "       -c <chat_id> [--beta]"
   exit 1
 }
 
@@ -18,6 +19,7 @@ usage() {
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     -c|--chat) chat_id="$2"; shift ;;
+    --beta) beta_flag="-beta" ;;
     *) echo "Unknown argument: $1"; usage ;;
   esac
   shift
@@ -49,7 +51,7 @@ version=$(grep 'version:' "$clone_dir/pubspec.yaml" | awk '{print $2}' | awk -F'
 
 # Move the APK to the new location
 if [ -f "$apk_dir/app-release.apk" ]; then
-  mv "$apk_dir/app-release.apk" "$output_apk-$version.apk"
+  mv "$apk_dir/app-release.apk" "$output_apk-$version$beta_flag.apk"
 else
   echo "Error: APK file not found."
   exit 1
@@ -74,22 +76,18 @@ fi
 
 # Activate the virtual environment and install dependencies
 source "$venv_dir/bin/activate"
-pip install -r "/requirements.txt"
+pip install -r "./requirements.txt"
 
 # Run the Python script
-python3 "index.py" -f "../$output_apk-$version.apk" -c "$chat_id" -d "$description"
+python3 "index.py" -f "./$output_apk-$version$beta_flag.apk" -c "$chat_id" -d "$description"
 
 # Deactivate the virtual environment
 deactivate
-
-# Exit from telegram-sender directory
-cd ..
 
 # Remove the cloned repository
 rm -rf "$clone_dir"
 
 # Remove the APK file
-rm -f "$output_apk-$version.apk"
+rm -f "$output_apk-$version$beta_flag.apk"
 
 echo "Process completed successfully, repository and APK cleaned up."
-
